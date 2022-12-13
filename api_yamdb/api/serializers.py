@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from api_yamdb.reviews.models import Review
+from api_yamdb.reviews.models import Comment, Review
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -34,3 +34,15 @@ class ReviewSerializer(serializers.ModelSerializer):
                 'Допустимые значения оценки - от 1 до 10!'
             )
         return score
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True,
+        default=serializers.CurrentUserDefault()
+    )
+
+    class Meta:
+        model = Comment
+        fields = ('id', 'text', 'author', 'pub_date')
