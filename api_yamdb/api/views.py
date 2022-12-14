@@ -1,3 +1,6 @@
+from rest_framework import filters
+from rest_framework.pagination import LimitOffsetPagination
+
 from api.serializers import CategorySerializer
 from reviews.models import Category
 from api.viewsets import CreateListDestroyViewSet
@@ -8,3 +11,6 @@ class CategoryViewSet(CreateListDestroyViewSet):
     serializer_class = CategorySerializer
     # FIXME add "permission_classes = (IsAdmin,)" after they are written 
     lookup_field = 'slug'
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    pagination_class = LimitOffsetPagination
