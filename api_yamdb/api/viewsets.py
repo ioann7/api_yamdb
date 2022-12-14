@@ -3,9 +3,9 @@ from rest_framework.viewsets import GenericViewSet
 
 
 class CreateListDestroyViewSet(mixins.CreateModelMixin,
-                        mixins.ListModelMixin,
-                        mixins.DestroyModelMixin,
-                        GenericViewSet):
+                               mixins.ListModelMixin,
+                               mixins.DestroyModelMixin,
+                               GenericViewSet):
     """
     A viewset that provides `create`, `list` and `destroy` actions.
 
