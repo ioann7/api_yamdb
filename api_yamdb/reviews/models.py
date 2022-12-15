@@ -32,7 +32,7 @@ class Genre(models.Model):
 
     class Meta:
         verbose_name = 'genre'
-        vebose_name_plural = 'genres'
+        verbose_name_plural = 'genres'
 
 
 class Title(models.Model):
