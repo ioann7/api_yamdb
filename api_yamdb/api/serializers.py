@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
+from django.utils import timezone
 
 from reviews.models import Category, Genre, Title
 
@@ -40,3 +41,10 @@ class TitleSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('id', 'name', 'year', 'description', 'genre', 'category')
         model = Title
+    
+    def validate_year(self, year):
+        if year > timezone.now().year:
+            raise serializers.ValidationError(
+                'Год выпуска не может быть больше чем текущий!'
+            )
+        return year
