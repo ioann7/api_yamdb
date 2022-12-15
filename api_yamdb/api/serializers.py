@@ -6,15 +6,15 @@ from reviews.models import User
 
 class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        validators=[
-            UniqueValidator(queryset=User.objects.all())
-        ],
+        validators=(
+            UniqueValidator(queryset=User.objects.all()),
+        ),
         required=True,
     )
     email = serializers.EmailField(
-        validators=[
-            UniqueValidator(queryset=User.objects.all())
-        ]
+        validators=(
+            UniqueValidator(queryset=User.objects.all()),
+        )
     )
 
     class Meta:
@@ -33,14 +33,14 @@ class UserEditSerializer(serializers.ModelSerializer):
 
 class RegisterDataSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        validators=[
-            UniqueValidator(queryset=User.objects.all())
-        ]
+        validators=(
+            UniqueValidator(queryset=User.objects.all()),
+        )
     )
     email = serializers.EmailField(
-        validators=[
-            UniqueValidator(queryset=User.objects.all())
-        ]
+        validators=(
+            UniqueValidator(queryset=User.objects.all()),
+        )
     )
 
     def validate_username(self, value):
