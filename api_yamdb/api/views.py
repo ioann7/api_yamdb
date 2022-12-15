@@ -1,5 +1,4 @@
 from rest_framework import filters
-from rest_framework.pagination import LimitOffsetPagination
 
 from api.serializers import CategorySerializer
 from reviews.models import Category
@@ -13,4 +12,3 @@ class CategoryViewSet(CreateListDestroyViewSet):
     lookup_field = 'slug'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
-    pagination_class = LimitOffsetPagination
