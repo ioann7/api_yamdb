@@ -1,10 +1,22 @@
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
+from rest_framework.validators import UniqueValidator, UniqueTogetherValidator
 
-from api_yamdb.reviews.models import Comment, Review
+from api_yamdb.reviews.models import Comment, Review, Category
 
 
-class ReviewSerializer(serializers.ModelSerializer):
+class CategorySerializer(serializers.ModelSerializer):
+    name = serializers.CharField(max_length=256)
+    slug = serializers.SlugField(
+        max_length=50,
+        validators=(UniqueValidator(queryset=Category.objects.all()),)
+    )
+
+    class Meta:
+        fields = ('name', 'slug')
+        model = Category
+ 
+ 
+ class ReviewSerializer(serializers.ModelSerializer):
 
     author = serializers.SlugRelatedField(
         slug_field='username',

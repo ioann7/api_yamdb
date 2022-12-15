@@ -1,10 +1,22 @@
-from django.shortcuts import get_object_or_404
+from rest_framework import filters
 from rest_framework import viewsets
+from django.shortcuts import get_object_or_404
 
+from api.serializers import CategorySerializer
+from api.viewsets import CreateListDestroyViewSet
 from api_yamdb.api.permissions import (AdminModeratorAuthorOrReadOnly,
                                        AdminOnly, AdminOrReadOnly)
 from api_yamdb.api.serializers import CommentSerializer, ReviewSerializer
-from api_yamdb.reviews.models import Review, Title
+from api_yamdb.reviews.models import Review, Title, Category
+
+
+class CategoryViewSet(CreateListDestroyViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    # FIXME add "permission_classes = (IsAdmin,)" after they are written 
+    lookup_field = 'slug'
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -40,3 +52,4 @@ class CommentViewSet(viewsets.ModelViewSet):
             Review,
             id=self.kwargs.get('review_id'))
         serializer.save(author=self.request.user, review=review)
+
