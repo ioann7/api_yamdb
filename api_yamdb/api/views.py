@@ -1,13 +1,15 @@
 from rest_framework import filters
-from rest_framework import viewsets
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.viewsets import ModelViewSet
 from django.shortcuts import get_object_or_404
 
-from api.serializers import CategorySerializer
-from api.viewsets import CreateListDestroyViewSet
+from api_yamdb.api.serializers import (CommentSerializer, ReviewSerializer,
+                                       CategorySerializer, GenreSerializer,
+                                       TitleSerializer)
+from api_yamdb.reviews.models import Review, Title, Category, Genre, Title
+from api_yamdb.api.viewsets import CreateListDestroyViewSet
 from api_yamdb.api.permissions import (AdminModeratorAuthorOrReadOnly,
                                        AdminOnly, AdminOrReadOnly)
-from api_yamdb.api.serializers import CommentSerializer, ReviewSerializer
-from api_yamdb.reviews.models import Review, Title, Category
 
 
 class CategoryViewSet(CreateListDestroyViewSet):
@@ -19,7 +21,22 @@ class CategoryViewSet(CreateListDestroyViewSet):
     search_fields = ('name',)
 
 
-class ReviewViewSet(viewsets.ModelViewSet):
+class GenreViewSet(CreateListDestroyViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    # FIXME add "permission_classes = (IsAdminOrReadOnly,)" after they are written 
+    lookup_field = 'slug'
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+
+
+class TitleViewSet(ModelViewSet):
+    queryset = Title.objects.all()
+    serializer_class = TitleSerializer
+    # FIXME add "permission_classes = (IsAdminOrReadOnly,)" after they are written 
+
+
+class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = (AdminModeratorAuthorOrReadOnly, )
 
@@ -52,4 +69,3 @@ class CommentViewSet(viewsets.ModelViewSet):
             Review,
             id=self.kwargs.get('review_id'))
         serializer.save(author=self.request.user, review=review)
-
