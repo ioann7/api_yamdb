@@ -16,6 +16,9 @@ class Category(models.Model):
     class Meta:
         verbose_name = 'category'
         verbose_name_plural = 'categories'
+    
+    def __str__(self):
+        return f'{self.name} | {self.slug}'
 
 
 class Genre(models.Model):
@@ -33,6 +36,9 @@ class Genre(models.Model):
     class Meta:
         verbose_name = 'genre'
         verbose_name_plural = 'genres'
+    
+    def __str__(self):
+        return f'{self.name} | {self.slug}'
 
 
 class Title(models.Model):
@@ -41,7 +47,7 @@ class Title(models.Model):
         help_text='Введите название произведения',
         max_length=256
     )
-    year = models.IntegerField(
+    year = models.PositiveIntegerField(
         'Год выпуска произведения',
         help_text='Введите год выпуска произведения'
     )
@@ -63,6 +69,9 @@ class Title(models.Model):
     class Meta:
         verbose_name = 'title'
         verbose_name_plural = 'titles'
+    
+    def __str__(self):
+        return self.name
 
 
 class GenreTitle(models.Model):
@@ -78,3 +87,6 @@ class GenreTitle(models.Model):
                 name='unique_genre_title'
             ),
         )
+    
+    def __str__(self):
+        return f'{self.genre} | {self.title}'
