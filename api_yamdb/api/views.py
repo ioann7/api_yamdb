@@ -8,7 +8,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
-from api_yamdb.reviews.models import User, Review, Title, Category, Genre, Title
+from api_yamdb.reviews.models import User, Review, Category, Genre, Title
 from api_yamdb.api.permissions import (AdminModeratorAuthorOrReadOnly,
                                        AdminOnly, AdminOrReadOnly)
 from api_yamdb.api.serializers import (CommentSerializer, ReviewSerializer,
