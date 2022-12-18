@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Review
+from api_yamdb.reviews.models import Review, User
 
 
 @admin.register(Review)
@@ -10,3 +10,6 @@ class ReviewAdmin(admin.ModelAdmin):
     search_fields = ('title', 'author', 'pub_date', 'score')
     list_filter = ('title', 'author', 'pub_date', 'score')
     empty_value_display = '-пусто-'
+
+
+admin.site.register(User)
