@@ -1,7 +1,6 @@
 from django.contrib.auth.models import AbstractUser
-from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
-
+from django.db import models
 
 ADMIN = 'admin'
 MODERATOR = 'moderator'
@@ -76,7 +75,7 @@ class Category(models.Model):
     class Meta:
         verbose_name = 'category'
         verbose_name_plural = 'categories'
-    
+
     def __str__(self):
         return f'{self.name} | {self.slug}'
 
@@ -96,7 +95,7 @@ class Genre(models.Model):
     class Meta:
         verbose_name = 'genre'
         verbose_name_plural = 'genres'
-    
+
     def __str__(self):
         return f'{self.name} | {self.slug}'
 
@@ -129,7 +128,7 @@ class Title(models.Model):
     class Meta:
         verbose_name = 'title'
         verbose_name_plural = 'titles'
-    
+
     def __str__(self):
         return self.name
 
@@ -147,7 +146,7 @@ class GenreTitle(models.Model):
                 name='unique_genre_title'
             ),
         )
-    
+
     def __str__(self):
         return f'{self.genre} | {self.title}'
 

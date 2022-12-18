@@ -1,22 +1,21 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from rest_framework import permissions, status
-from rest_framework import filters
-from rest_framework.viewsets import ModelViewSet
+from rest_framework import filters, permissions, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
-from api_yamdb.reviews.models import User, Review, Category, Genre, Title
 from api_yamdb.api.permissions import (AdminModeratorAuthorOrReadOnly,
                                        AdminOnly, AdminOrReadOnly)
-from api_yamdb.api.serializers import (CommentSerializer, ReviewSerializer,
-                                       CategorySerializer, GenreSerializer,
-                                       TitleSerializer, UserSerializer,
-                                       RegisterDataSerializer, TokenSerializer,
-                                       UserEditSerializer)
+from api_yamdb.api.serializers import (CategorySerializer, CommentSerializer,
+                                       GenreSerializer, RegisterDataSerializer,
+                                       ReviewSerializer, TitleSerializer,
+                                       TokenSerializer, UserEditSerializer,
+                                       UserSerializer)
 from api_yamdb.api.viewsets import CreateListDestroyViewSet
+from api_yamdb.reviews.models import Category, Genre, Review, Title, User
 
 
 @api_view(["POST"])

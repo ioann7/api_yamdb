@@ -1,9 +1,10 @@
 from django.db.models import Avg
-from rest_framework import serializers
-from rest_framework.validators import UniqueValidator, UniqueTogetherValidator
 from django.utils import timezone
+from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
 
-from api_yamdb.reviews.models import Comment, Review, Category, Genre, Title, User
+from api_yamdb.reviews.models import (Category, Comment, Genre, Review, Title,
+                                      User)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -104,7 +105,7 @@ class TitleSerializer(serializers.ModelSerializer):
             'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
         model = Title
-    
+
     def validate_year(self, year):
         if year > timezone.now().year:
             raise serializers.ValidationError(
