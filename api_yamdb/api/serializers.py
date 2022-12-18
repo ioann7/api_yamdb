@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator, UniqueTogetherValidator
 from django.utils import timezone
@@ -96,9 +97,12 @@ class TitleSerializer(serializers.ModelSerializer):
         source='genres',
         queryset=Genre.objects.all()
     )
+    rating = serializers.SerializerMethodField()
 
     class Meta:
-        fields = ('id', 'name', 'year', 'description', 'genre', 'category')
+        fields = (
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
+        )
         model = Title
     
     def validate_year(self, year):
@@ -107,9 +111,15 @@ class TitleSerializer(serializers.ModelSerializer):
                 'Год выпуска не может быть больше чем текущий!'
             )
         return year
- 
- 
- class ReviewSerializer(serializers.ModelSerializer):
+
+    def get_rating(self, obj):
+        rating = obj.reviews.aggregate(Avg('score')).get('score__avg')
+        if not rating:
+            return rating
+        return round(rating, 1)
+
+
+class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         slug_field='username',
         read_only=True,
