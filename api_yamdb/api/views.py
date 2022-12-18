@@ -95,7 +95,7 @@ class UserViewSet(ModelViewSet):
 class CategoryViewSet(CreateListDestroyViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (AdminOnly,)
+    permission_classes = (AdminOrReadOnly,)
     lookup_field = 'slug'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
