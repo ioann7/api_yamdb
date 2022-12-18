@@ -95,7 +95,7 @@ class UserViewSet(ModelViewSet):
 class CategoryViewSet(CreateListDestroyViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    # FIXME add "permission_classes = (IsAdmin,)" after they are written 
+    permission_classes = (AdminOrReadOnly,)
     lookup_field = 'slug'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
@@ -104,7 +104,7 @@ class CategoryViewSet(CreateListDestroyViewSet):
 class GenreViewSet(CreateListDestroyViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    # FIXME add "permission_classes = (IsAdminOrReadOnly,)" after they are written 
+    permission_classes = (AdminOrReadOnly,)
     lookup_field = 'slug'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
@@ -113,7 +113,7 @@ class GenreViewSet(CreateListDestroyViewSet):
 class TitleViewSet(ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    # FIXME add "permission_classes = (IsAdminOrReadOnly,)" after they are written 
+    permission_classes = (AdminOrReadOnly,)
 
 
 class ReviewViewSet(ModelViewSet):
@@ -134,7 +134,7 @@ class ReviewViewSet(ModelViewSet):
         serializer.save(author=self.request.user, title=title)
 
 
-class CommentViewSet(viewsets.ModelViewSet):
+class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (AdminModeratorAuthorOrReadOnly, )
 
