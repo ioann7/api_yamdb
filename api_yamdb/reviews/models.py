@@ -37,12 +37,16 @@ class User(AbstractUser):
     )
 
     @property
+    def is_user(self):
+        return self.role == USER
+
+    @property
     def is_moderator(self):
-        return self.role == self.MODERATOR
+        return self.role == MODERATOR
 
     @property
     def is_admin(self):
-        return self.role == self.ADMIN
+        return self.role == ADMIN
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
@@ -104,7 +108,7 @@ class Title(models.Model):
     name = models.CharField(
         'Название произведения',
         help_text='Введите название произведения',
-        max_length=256
+        max_length=255
     )
     year = models.PositiveIntegerField(
         'Год выпуска произведения',
@@ -123,7 +127,10 @@ class Title(models.Model):
         verbose_name='Категория',
         help_text='Выберите категорию для произведения'
     )
-    genres = models.ManyToManyField(Genre, through='GenreTitle')
+    genre = models.ManyToManyField(
+        Genre,
+        through='GenreTitle',
+        related_name='genre')
 
     class Meta:
         verbose_name = 'title'
@@ -156,7 +163,7 @@ class Review(models.Model):
     Class representing a review on Title from auth users.
     """
     title = models.ForeignKey(
-        'Title',
+        Title,
         on_delete=models.CASCADE,
         related_name='reviews',
         verbose_name='Произведение'
