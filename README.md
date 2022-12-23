@@ -20,9 +20,9 @@
 
 ### Стек технологий:
 - Python 3.7
-- Django 2.2.28
-- DRF
-- JWT
+- Django 3.2
+- DRF 3.12.4
+- JWT 5.2.2
 
 Полный список в файле requirements.txt
 
