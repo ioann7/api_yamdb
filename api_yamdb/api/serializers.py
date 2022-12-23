@@ -1,3 +1,4 @@
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db.models import Avg
 from django.utils import timezone
 from rest_framework import serializers
@@ -7,15 +8,9 @@ from reviews.models import Category, Comment, Genre, Review, Title, User
 
 class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        validators=(
-            UniqueValidator(queryset=User.objects.all()),
-        ),
+        max_length=150,
+        validators=[UnicodeUsernameValidator()],
         required=True,
-    )
-    email = serializers.EmailField(
-        validators=(
-            UniqueValidator(queryset=User.objects.all()),
-        )
     )
 
     class Meta:
@@ -25,23 +20,24 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserEditSerializer(serializers.ModelSerializer):
+    role = serializers.StringRelatedField(read_only=True)
+
     class Meta:
-        fields = ("username", "email", "first_name",
-                  "last_name", "bio", "role")
+        fields = ('username', 'email', 'bio', 'role',
+                  'first_name', 'last_name')
         model = User
         read_only_fields = ('role',)
 
 
 class RegisterDataSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        validators=(
-            UniqueValidator(queryset=User.objects.all()),
-        )
+        max_length=150,
+        validators=[UnicodeUsernameValidator()],
+        required=True
     )
     email = serializers.EmailField(
-        validators=(
-            UniqueValidator(queryset=User.objects.all()),
-        )
+        max_length=254,
+        required=True
     )
 
     def validate_username(self, value):
@@ -49,14 +45,32 @@ class RegisterDataSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Username 'me' is not valid")
         return value
 
+    def validate(self, data):
+        user_if = User.objects.filter(username=data['username']).exists()
+        email_if = User.objects.filter(email=data['email']).exists()
+        if user_if:
+            if not email_if:
+                raise serializers.ValidationError('Имя уже использовалось')
+        if email_if:
+            if not user_if:
+                raise serializers.ValidationError('Почта уже использовалось')
+        if User.objects.filter(username=data['username'],
+                               email=data['email']).exists():
+            return data
+        return data
+
     class Meta:
         fields = ("username", "email")
         model = User
 
 
 class TokenSerializer(serializers.Serializer):
-    username = serializers.CharField()
+    username = serializers.CharField(max_length=150)
     confirmation_code = serializers.CharField()
+
+    class Meta:
+        fields = ("username", "confirmation_code")
+        model = User
 
 
 class CategorySerializer(serializers.ModelSerializer):

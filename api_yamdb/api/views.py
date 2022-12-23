@@ -1,11 +1,11 @@
 from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, permissions, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework_simplejwt.tokens import RefreshToken
 from reviews.models import Category, Genre, Review, Title, User
 
 from .filters import TitleFilter
@@ -19,51 +19,14 @@ from .serializers import (CategorySerializer, CommentSerializer,
 from .viewsets import CreateListDestroyViewSet
 
 
-@api_view(["POST"])
-@permission_classes([permissions.AllowAny])
-def register(request):
-    serializer = RegisterDataSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    serializer.save()
-    user = get_object_or_404(
-        User,
-        username=serializer.validated_data["username"]
-    )
-    confirmation_code = default_token_generator.make_token(user)
-    send_mail(
-        subject="YaMDb registration",
-        message=f"Your confirmation code: {confirmation_code}",
-        from_email=None,
-        recipient_list=[user.email],
-    )
-
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-@api_view(["POST"])
-@permission_classes([permissions.AllowAny])
-def get_jwt_token(request):
-    serializer = TokenSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    user = get_object_or_404(
-        User,
-        username=serializer.validated_data["username"]
-    )
-
-    if default_token_generator.check_token(
-        user, serializer.validated_data["confirmation_code"]
-    ):
-        token = AccessToken.for_user(user)
-        return Response({"token": str(token)}, status=status.HTTP_200_OK)
-
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 class UserViewSet(ModelViewSet):
     lookup_field = "username"
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (AdminOnly,)
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['username']
+    http_method_names = ['get', 'post', 'delete', 'patch']
 
     @action(
         methods=[
@@ -90,6 +53,57 @@ class UserViewSet(ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+def send_email(data):
+    email = EmailMessage(
+        subject=data['mail_subject'],
+        body=data['email_info'],
+        to=[data['to_email']]
+    )
+    email.send()
+
+
+@api_view(["POST"])
+@permission_classes([permissions.AllowAny])
+def register(request):
+    serializer = RegisterDataSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    user, created = User.objects.get_or_create(
+        username=serializer.validated_data['username'],
+        email=serializer.validated_data['email'],
+    )
+    confirmation_code = default_token_generator.make_token(user)
+    email_text = (
+        f'text{confirmation_code}')
+    data = {
+        'email_info': email_text,
+        'to_email': user.email,
+        'mail_subject': 'Код подтверждения'
+    }
+    send_email(data)
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@permission_classes([permissions.AllowAny])
+def get_jwt_token(request):
+    serializer = TokenSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    user = get_object_or_404(
+        User,
+        username=serializer.validated_data["username"]
+    )
+
+    if user.confirmation_code == serializer.validated_data.get(
+            'confirmation_code'
+    ):
+        token = RefreshToken.for_user(user).access_token
+        return Response({'token': str(token)},
+                        status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CategoryViewSet(CreateListDestroyViewSet):

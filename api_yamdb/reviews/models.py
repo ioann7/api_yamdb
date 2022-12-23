@@ -35,6 +35,11 @@ class User(AbstractUser):
         null=True,
         blank=True
     )
+    confirmation_code = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name='Код для авторизации'
+    )
 
     @property
     def is_user(self):
@@ -63,6 +68,9 @@ class User(AbstractUser):
             )
         ]
 
+    def __str__(self):
+        return self.username
+
 
 class Category(models.Model):
     name = models.CharField(
@@ -77,6 +85,7 @@ class Category(models.Model):
     )
 
     class Meta:
+        ordering = ['id']
         verbose_name = 'category'
         verbose_name_plural = 'categories'
 
@@ -97,6 +106,7 @@ class Genre(models.Model):
     )
 
     class Meta:
+        ordering = ['id']
         verbose_name = 'genre'
         verbose_name_plural = 'genres'
 
@@ -133,6 +143,7 @@ class Title(models.Model):
         related_name='genre')
 
     class Meta:
+        ordering = ['id']
         verbose_name = 'title'
         verbose_name_plural = 'titles'
 
@@ -185,6 +196,7 @@ class Review(models.Model):
     )
 
     class Meta:
+        ordering = ['id']
         constraints = [
             models.UniqueConstraint(
                 fields=['author', 'title'],
@@ -220,6 +232,7 @@ class Comment(models.Model):
     )
 
     class Meta:
+        ordering = ['id']
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
 
