@@ -1,12 +1,14 @@
+from typing import Any, Optional, Dict, List
 import csv
-import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+import logging
 
-from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
-from reviews.models import (Category, Comment, Genre, GenreTitle, Review,
-                            Title, User)
+from django.conf import settings
+
+from reviews.models import (User, Category, Genre, Title,
+                            GenreTitle, Review, Comment)
+
 
 logger = logging.getLogger(__name__)
 
