@@ -9,7 +9,10 @@ from reviews.models import Category, Comment, Genre, Review, Title, User
 class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         max_length=150,
-        validators=[UnicodeUsernameValidator()],
+        validators=(
+            UnicodeUsernameValidator(),
+            UniqueValidator(queryset=User.objects.all()),
+        ),
         required=True,
     )
 
@@ -20,19 +23,26 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserEditSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        max_length=150,
+        validators=(
+            UnicodeUsernameValidator(),
+            UniqueValidator(queryset=User.objects.all()),
+        ),
+        required=True,
+    )
     role = serializers.StringRelatedField(read_only=True)
 
     class Meta:
         fields = ('username', 'email', 'bio', 'role',
                   'first_name', 'last_name')
         model = User
-        read_only_fields = ('role',)
 
 
 class RegisterDataSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         max_length=150,
-        validators=[UnicodeUsernameValidator()],
+        validators=(UnicodeUsernameValidator(),),
         required=True
     )
     email = serializers.EmailField(
