@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from api_yamdb.reviews.models import Review, User
+from .models import Review, User
 
 
 @admin.register(Review)

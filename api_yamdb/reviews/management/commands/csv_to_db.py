@@ -9,6 +9,7 @@ from django.conf import settings
 from reviews.models import (User, Category, Genre, Title,
                             GenreTitle, Review, Comment)
 
+
 logger = logging.getLogger(__name__)
 
 

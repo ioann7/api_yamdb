@@ -5,12 +5,14 @@ certifi==2022.12.7
 charset-normalizer==2.0.12
 colorama==0.4.6
 Django==3.2
+django-filter==22.1
 djangorestframework==3.12.4
 djangorestframework-simplejwt==5.2.2
 flake8==5.0.4
 idna==3.4
 importlib-metadata==4.2.0
 iniconfig==1.1.1
+isort==5.10.1
 mccabe==0.7.0
 mypy==0.971
 mypy-extensions==0.4.3

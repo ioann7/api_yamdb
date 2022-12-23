@@ -1,10 +1,8 @@
 from django.db.models import Avg
 from django.utils import timezone
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
-
-from api_yamdb.reviews.models import (Category, Comment, Genre, Review, Title,
-                                      User)
+from rest_framework.validators import UniqueValidator
+from reviews.models import Category, Comment, Genre, Review, Title, User
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -69,8 +67,8 @@ class CategorySerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = ('name', 'slug')
         model = Category
+        fields = ('name', 'slug')
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -85,33 +83,39 @@ class GenreSerializer(serializers.ModelSerializer):
         model = Genre
 
 
-class TitleSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(max_length=256)
-    description = serializers.CharField(required=False)
+class TitleCreateSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(
-        slug_field='slug',
-        queryset=Category.objects.all()
+        slug_field='slug', queryset=Category.objects.all(),
     )
     genre = serializers.SlugRelatedField(
-        many=True,
-        slug_field='slug',
-        source='genres',
-        queryset=Genre.objects.all()
+        slug_field='slug', queryset=Genre.objects.all(), many=True
     )
+
+    class Meta:
+        model = Title
+        fields = (
+            'id', 'name', 'year', 'description', 'genre', 'category'
+        )
+
+    def validate_year(self, value):
+        current_year = timezone.now().year
+        if not 0 <= value <= current_year:
+            raise serializers.ValidationError(
+                'Проверьте год создания произведения (должен быть нашей эры).'
+            )
+        return value
+
+
+class TitleSerializer(serializers.ModelSerializer):
+    category = CategorySerializer()
+    genre = GenreSerializer(read_only=True, many=True)
     rating = serializers.SerializerMethodField()
 
     class Meta:
+        model = Title
         fields = (
             'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
-        model = Title
-
-    def validate_year(self, year):
-        if year > timezone.now().year:
-            raise serializers.ValidationError(
-                'Год выпуска не может быть больше чем текущий!'
-            )
-        return year
 
     def get_rating(self, obj):
         rating = obj.reviews.aggregate(Avg('score')).get('score__avg')
@@ -130,13 +134,6 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date')
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Review.objects.all(),
-                fields=['title_id', 'author'],
-                message='Отзыв можно оставить только один раз!'
-            )
-        ]
 
     def validate_score(self, score):
         if 1 > score > 10:
@@ -144,6 +141,19 @@ class ReviewSerializer(serializers.ModelSerializer):
                 'Допустимые значения оценки - от 1 до 10!'
             )
         return score
+
+    def validate(self, data):
+        if self.context['request'].method != 'POST':
+            return data
+
+        title_id = self.context['view'].kwargs.get('title_id')
+        author = self.context['request'].user
+        if Review.objects.filter(
+                author=author, title=title_id).exists():
+            raise serializers.ValidationError(
+                'Отзыв можно оставить только один раз!'
+            )
+        return data
 
 
 class CommentSerializer(serializers.ModelSerializer):

@@ -6,16 +6,17 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
+from reviews.models import Category, Genre, Review, Title, User
 
-from api_yamdb.api.permissions import (AdminModeratorAuthorOrReadOnly,
-                                       AdminOnly, AdminOrReadOnly)
-from api_yamdb.api.serializers import (CategorySerializer, CommentSerializer,
-                                       GenreSerializer, RegisterDataSerializer,
-                                       ReviewSerializer, TitleSerializer,
-                                       TokenSerializer, UserEditSerializer,
-                                       UserSerializer)
-from api_yamdb.api.viewsets import CreateListDestroyViewSet
-from api_yamdb.reviews.models import Category, Genre, Review, Title, User
+from .filters import TitleFilter
+from .permissions import (AdminModeratorAuthorOrReadOnly, AdminOnly,
+                          AdminOrReadOnly)
+from .serializers import (CategorySerializer, CommentSerializer,
+                          GenreSerializer, RegisterDataSerializer,
+                          ReviewSerializer, TitleCreateSerializer,
+                          TitleSerializer, TokenSerializer, UserEditSerializer,
+                          UserSerializer)
+from .viewsets import CreateListDestroyViewSet
 
 
 @api_view(["POST"])
@@ -113,6 +114,12 @@ class TitleViewSet(ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     permission_classes = (AdminOrReadOnly,)
+    filterset_class = TitleFilter
+
+    def get_serializer_class(self):
+        if self.request.method in ('POST', 'PATCH',):
+            return TitleCreateSerializer
+        return TitleSerializer
 
 
 class ReviewViewSet(ModelViewSet):
