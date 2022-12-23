@@ -22,7 +22,6 @@ class User(AbstractUser):
     username = models.CharField(
         max_length=150,
         verbose_name='Имя пользователя',
-        null=True,
         unique=True
     )
     role = models.CharField(
@@ -46,12 +45,6 @@ class User(AbstractUser):
     class Meta:
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
-        constraints = [
-            models.UniqueConstraint(
-                fields=['username', 'email'],
-                name='unique_username_email'
-            )
-        ]
 
     @property
     def is_moderator(self):

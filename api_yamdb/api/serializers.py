@@ -15,13 +15,6 @@ class UserSerializer(serializers.ModelSerializer):
         validators=[UnicodeUsernameValidator()],
         required=True,
     )
-    email = serializers.EmailField(
-        max_length=150,
-        validators=(
-            UniqueValidator(queryset=User.objects.all()),
-        ),
-        required=True,
-    )
 
     class Meta:
         fields = ("username", "email", "first_name",
@@ -30,9 +23,12 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserEditSerializer(serializers.ModelSerializer):
+
+    role = serializers.StringRelatedField(read_only=True)
+
     class Meta:
-        fields = ("username", "email", "first_name",
-                  "last_name", "bio", "role")
+        fields = ('username', 'email', 'bio', 'role',
+                  'first_name', 'last_name')
         model = User
         read_only_fields = ('role',)
 
@@ -45,26 +41,26 @@ class RegisterDataSerializer(serializers.ModelSerializer):
     )
     email = serializers.EmailField(
         max_length=254,
-        validators=(
-            UniqueValidator(queryset=User.objects.all()),
-        ),
         required=True
     )
 
     def validate_username(self, value):
         if value.lower() == "me":
-            raise serializers.ValidationError("Username 'me' is not valid")
+            raise ValidationError("Username 'me' is not valid")
         return value
 
-    def validate_exist(self, attrs):
-        username = attrs.get('username')
-        if_user = User.objects.filter(username=username)
-        if if_user.exists():
-            raise ValidationError('Пользователь с таким именем уже существует')
-        email = attrs.get('email')
-        if_email = User.objects.filter(email=email)
-        if if_email.exists():
-            raise ValidationError('Почта уже использовалась')
+    def validate(self, data):
+        user_if = User.objects.filter(username=data['username']).exists()
+        email_if = User.objects.filter(email=data['email']).exists()
+        if user_if:
+            if not email_if:
+                raise ValidationError('Имя уже использовалось')
+        if email_if:
+            if not user_if:
+                raise ValidationError('Почта уже использовалось')
+        if User.objects.filter(username=data['username'], email=data['email']).exists():
+            return data
+        return data
 
     class Meta:
         fields = ("username", "email")
@@ -74,6 +70,10 @@ class RegisterDataSerializer(serializers.ModelSerializer):
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
     confirmation_code = serializers.CharField()
+
+    class Meta:
+        fields = ("username", "confirmation_code")
+        model = User
 
 
 class CategorySerializer(serializers.ModelSerializer):
