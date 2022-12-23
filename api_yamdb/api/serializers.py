@@ -30,14 +30,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserEditSerializer(serializers.ModelSerializer):
-
-    def validate(self, data):
-        if_user = User.objects.filter(username=data['username']).exists()
-        if_email = User.objects.filter(email=data['email']).exists()
-        if (if_user or if_email):
-            raise serializers.ValidationError('Почта уже использовалась')
-        return data
-
     class Meta:
         fields = ("username", "email", "first_name",
                   "last_name", "bio", "role")
