@@ -1,23 +1,26 @@
 from django.db.models import Avg
+from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
 
-from api_yamdb.reviews.models import (Category, Comment, Genre, Review, Title,
-                                      User)
+from reviews.models import (Category, Comment, Genre, Review, Title,
+                            User)
 
 
 class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
+        max_length=150,
+        validators=[UnicodeUsernameValidator()],
+        required=True,
+    )
+    email = serializers.EmailField(
+        max_length=150,
         validators=(
             UniqueValidator(queryset=User.objects.all()),
         ),
         required=True,
-    )
-    email = serializers.EmailField(
-        validators=(
-            UniqueValidator(queryset=User.objects.all()),
-        )
     )
 
     class Meta:
@@ -27,6 +30,14 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserEditSerializer(serializers.ModelSerializer):
+
+    def validate(self, data):
+        if_user = User.objects.filter(username=data['username']).exists()
+        if_email = User.objects.filter(email=data['email']).exists()
+        if (if_user or if_email):
+            raise serializers.ValidationError('Почта уже использовалась')
+        return data
+
     class Meta:
         fields = ("username", "email", "first_name",
                   "last_name", "bio", "role")
@@ -36,14 +47,16 @@ class UserEditSerializer(serializers.ModelSerializer):
 
 class RegisterDataSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        validators=(
-            UniqueValidator(queryset=User.objects.all()),
-        )
+        max_length=150,
+        validators=[UnicodeUsernameValidator()],
+        required=True
     )
     email = serializers.EmailField(
+        max_length=254,
         validators=(
             UniqueValidator(queryset=User.objects.all()),
-        )
+        ),
+        required=True
     )
 
     def validate_username(self, value):
@@ -51,13 +64,23 @@ class RegisterDataSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Username 'me' is not valid")
         return value
 
+    def validate_exist(self, attrs):
+        username = attrs.get('username')
+        if_user = User.objects.filter(username=username)
+        if if_user.exists():
+            raise ValidationError('Пользователь с таким именем уже существует')
+        email = attrs.get('email')
+        if_email = User.objects.filter(email=email)
+        if if_email.exists():
+            raise ValidationError('Почта уже использовалась')
+
     class Meta:
         fields = ("username", "email")
         model = User
 
 
 class TokenSerializer(serializers.Serializer):
-    username = serializers.CharField()
+    username = serializers.CharField(max_length=150)
     confirmation_code = serializers.CharField()
 
 

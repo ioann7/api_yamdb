@@ -1,40 +1,57 @@
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-ADMIN = 'admin'
-MODERATOR = 'moderator'
-USER = 'user'
-ROLES = [
-    (ADMIN, 'Administrator'),
-    (MODERATOR, 'Moderator'),
-    (USER, 'User'),
-]
-
 
 class User(AbstractUser):
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
+    USER = 'user'
+    ROLES = (
+        (ADMIN, 'Administrator'),
+        (MODERATOR, 'Moderator'),
+        (USER, 'User'),
+    )
 
     email = models.EmailField(
+        max_length=254,
         verbose_name='Адрес электронной почты',
-        unique=True,
+        unique=True
     )
     username = models.CharField(
-        verbose_name='Имя пользователя',
         max_length=150,
+        verbose_name='Имя пользователя',
         null=True,
         unique=True
     )
     role = models.CharField(
-        verbose_name='Роль',
         max_length=50,
+        verbose_name='Роль',
         choices=ROLES,
         default=USER
     )
     bio = models.TextField(
+        max_length=300,
         verbose_name='О себе',
         null=True,
         blank=True
     )
+    confirmation_code = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name='Код для авторизации'
+    )
+
+    class Meta:
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"
+        constraints = [
+            models.UniqueConstraint(
+                fields=['username', 'email'],
+                name='unique_username_email'
+            )
+        ]
 
     @property
     def is_moderator(self):
@@ -44,20 +61,12 @@ class User(AbstractUser):
     def is_admin(self):
         return self.role == self.ADMIN
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    @property
+    def is_user(self):
+        return self.role == self.USER
 
-    class Meta:
-        ordering = ['id']
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
 
-        constraints = [
-            models.CheckConstraint(
-                check=~models.Q(username__iexact="me"),
-                name="username_is_not_me"
-            )
-        ]
+User = get_user_model()
 
 
 class Category(models.Model):
@@ -156,7 +165,7 @@ class Review(models.Model):
     Class representing a review on Title from auth users.
     """
     title = models.ForeignKey(
-        'Title',
+        Title,
         on_delete=models.CASCADE,
         related_name='reviews',
         verbose_name='Произведение'

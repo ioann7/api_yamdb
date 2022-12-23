@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from api_yamdb.reviews.models import Review, User
+from .models import Review, User
 
 
 @admin.register(Review)
@@ -12,4 +12,18 @@ class ReviewAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-admin.site.register(User)
+class UserAdmin(admin.ModelAdmin):
+    list_display = (
+        'username',
+        'first_name',
+        'last_name',
+        'email',
+        'role'
+    )
+    list_editable = ('role',)
+    list_filter = ('role',)
+    search_fields = ('username',)
+    empty_value_display = '-пусто-'
+
+
+admin.site.register(User, UserAdmin)
