@@ -1,5 +1,4 @@
 from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.db.models import Avg
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
@@ -17,8 +16,8 @@ class UserSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = ("username", "email", "first_name",
-                  "last_name", "bio", "role")
+        fields = ('username', 'email', 'first_name',
+                  'last_name', 'bio', 'role')
         model = User
 
 
@@ -51,7 +50,7 @@ class RegisterDataSerializer(serializers.ModelSerializer):
     )
 
     def validate_username(self, value):
-        if value.lower() == "me":
+        if value.lower() == 'me':
             raise serializers.ValidationError("Username 'me' is not valid")
         return value
 
@@ -64,13 +63,10 @@ class RegisterDataSerializer(serializers.ModelSerializer):
         if email_if:
             if not user_if:
                 raise serializers.ValidationError('Почта уже использовалось')
-        if User.objects.filter(username=data['username'],
-                               email=data['email']).exists():
-            return data
         return data
 
     class Meta:
-        fields = ("username", "email")
+        fields = ('username', 'email')
         model = User
 
 
@@ -79,7 +75,7 @@ class TokenSerializer(serializers.Serializer):
     confirmation_code = serializers.CharField()
 
     class Meta:
-        fields = ("username", "confirmation_code")
+        fields = ('username', 'confirmation_code')
         model = User
 
 
@@ -142,7 +138,7 @@ class TitleSerializer(serializers.ModelSerializer):
         )
 
     def get_rating(self, obj):
-        rating = obj.reviews.aggregate(Avg('score')).get('score__avg')
+        rating = obj.rating
         if not rating:
             return rating
         return round(rating, 1)

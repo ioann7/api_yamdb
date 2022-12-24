@@ -2,17 +2,16 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-ADMIN = 'admin'
-MODERATOR = 'moderator'
-USER = 'user'
-ROLES = [
-    (ADMIN, 'Administrator'),
-    (MODERATOR, 'Moderator'),
-    (USER, 'User'),
-]
-
 
 class User(AbstractUser):
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
+    USER = 'user'
+    ROLES = [
+        (ADMIN, 'Administrator'),
+        (MODERATOR, 'Moderator'),
+        (USER, 'User'),
+    ]
 
     email = models.EmailField(
         verbose_name='Адрес электронной почты',
@@ -43,28 +42,28 @@ class User(AbstractUser):
 
     @property
     def is_user(self):
-        return self.role == USER
+        return self.role == self.USER
 
     @property
     def is_moderator(self):
-        return self.role == MODERATOR
+        return self.role == self.MODERATOR
 
     @property
     def is_admin(self):
-        return self.role == ADMIN
+        return self.role == self.ADMIN
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 
     class Meta:
-        ordering = ['id']
+        ordering = ('id',)
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
 
         constraints = [
             models.CheckConstraint(
-                check=~models.Q(username__iexact="me"),
-                name="username_is_not_me"
+                check=~models.Q(username__iexact='me'),
+                name='username_is_not_me'
             )
         ]
 
@@ -85,7 +84,7 @@ class Category(models.Model):
     )
 
     class Meta:
-        ordering = ['id']
+        ordering = ('id',)
         verbose_name = 'category'
         verbose_name_plural = 'categories'
 
@@ -106,7 +105,7 @@ class Genre(models.Model):
     )
 
     class Meta:
-        ordering = ['id']
+        ordering = ('id',)
         verbose_name = 'genre'
         verbose_name_plural = 'genres'
 
@@ -122,7 +121,8 @@ class Title(models.Model):
     )
     year = models.PositiveIntegerField(
         'Год выпуска произведения',
-        help_text='Введите год выпуска произведения'
+        help_text='Введите год выпуска произведения',
+        db_index=True
     )
     description = models.TextField(
         'Описание произведения',
@@ -143,7 +143,7 @@ class Title(models.Model):
         related_name='genre')
 
     class Meta:
-        ordering = ['id']
+        ordering = ('id',)
         verbose_name = 'title'
         verbose_name_plural = 'titles'
 
@@ -156,6 +156,7 @@ class GenreTitle(models.Model):
     title = models.ForeignKey(Title, on_delete=models.CASCADE)
 
     class Meta:
+        ordering = ('id',)
         verbose_name = 'genre_title'
         verbose_name_plural = 'genres_titles'
         constraints = (
@@ -187,7 +188,7 @@ class Review(models.Model):
         verbose_name='Автор'
     )
     score = models.IntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        validators=(MinValueValidator(1), MaxValueValidator(10)),
         verbose_name='Оценка'
     )
     pub_date = models.DateTimeField(
@@ -196,10 +197,10 @@ class Review(models.Model):
     )
 
     class Meta:
-        ordering = ['id']
+        ordering = ('id',)
         constraints = [
             models.UniqueConstraint(
-                fields=['author', 'title'],
+                fields=('author', 'title'),
                 name='unique_review')
         ]
         verbose_name = 'Отзыв'
@@ -232,7 +233,7 @@ class Comment(models.Model):
     )
 
     class Meta:
-        ordering = ['id']
+        ordering = ('id',)
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
 

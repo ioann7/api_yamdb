@@ -1,13 +1,15 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
 from django.shortcuts import get_object_or_404
+from django.db.models import Avg
 from rest_framework import filters, permissions, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
-from reviews.models import Category, Genre, Review, Title, User
 
+from api_yamdb.settings import EMAIL_ADMIN
+from reviews.models import Category, Genre, Review, Title, User
 from .filters import TitleFilter
 from .permissions import (AdminModeratorAuthorOrReadOnly, AdminOnly,
                           AdminOrReadOnly)
@@ -20,7 +22,7 @@ from .viewsets import CreateListDestroyViewSet
 
 
 class UserViewSet(ModelViewSet):
-    lookup_field = "username"
+    lookup_field = 'username'
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (AdminOnly,)
@@ -30,20 +32,20 @@ class UserViewSet(ModelViewSet):
 
     @action(
         methods=[
-            "get",
-            "patch",
+            'get',
+            'patch',
         ],
         detail=False,
-        url_path="me",
+        url_path='me',
         permission_classes=[permissions.IsAuthenticated],
         serializer_class=UserEditSerializer,
     )
     def users_own_profile(self, request):
         user = request.user
-        if request.method == "GET":
+        if request.method == 'GET':
             serializer = self.get_serializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        if request.method == "PATCH":
+        if request.method == 'PATCH':
             serializer = self.get_serializer(
                 user,
                 data=request.data,
@@ -59,12 +61,13 @@ def send_email(data):
     email = EmailMessage(
         subject=data['mail_subject'],
         body=data['email_info'],
+        from_email=EMAIL_ADMIN,
         to=[data['to_email']]
     )
     email.send()
 
 
-@api_view(["POST"])
+@api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def register(request):
     serializer = RegisterDataSerializer(data=request.data)
@@ -75,7 +78,7 @@ def register(request):
     )
     confirmation_code = default_token_generator.make_token(user)
     email_text = (
-        f'text{confirmation_code}')
+        f'Код подтверждения {confirmation_code}')
     data = {
         'email_info': email_text,
         'to_email': user.email,
@@ -86,14 +89,14 @@ def register(request):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-@api_view(["POST"])
+@api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def get_jwt_token(request):
     serializer = TokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     user = get_object_or_404(
         User,
-        username=serializer.validated_data["username"]
+        username=serializer.validated_data['username']
     )
 
     if user.confirmation_code == serializer.validated_data.get(
@@ -125,7 +128,8 @@ class GenreViewSet(CreateListDestroyViewSet):
 
 
 class TitleViewSet(ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')).order_by('id').all()
     serializer_class = TitleSerializer
     permission_classes = (AdminOrReadOnly,)
     filterset_class = TitleFilter
@@ -161,11 +165,15 @@ class CommentViewSet(ModelViewSet):
     def get_queryset(self):
         review = get_object_or_404(
             Review,
-            id=self.kwargs.get('review_id'))
+            id=self.kwargs.get('review_id'),
+            title__id=self.kwargs.get('title_id')
+        )
         return review.comments.all()
 
     def perform_create(self, serializer):
         review = get_object_or_404(
             Review,
-            id=self.kwargs.get('review_id'))
+            id=self.kwargs.get('review_id'),
+            title__id=self.kwargs.get('title_id')
+        )
         serializer.save(author=self.request.user, review=review)
