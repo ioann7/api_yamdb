@@ -1,5 +1,4 @@
 from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.db.models import Avg
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
@@ -142,7 +141,7 @@ class TitleSerializer(serializers.ModelSerializer):
         )
 
     def get_rating(self, obj):
-        rating = obj.reviews.aggregate(Avg('score')).get('score__avg')
+        rating = obj.rating
         if not rating:
             return rating
         return round(rating, 1)

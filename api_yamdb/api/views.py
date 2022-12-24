@@ -1,13 +1,14 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
 from django.shortcuts import get_object_or_404
+from django.db.models import Avg
 from rest_framework import filters, permissions, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
-from reviews.models import Category, Genre, Review, Title, User
 
+from reviews.models import Category, Genre, Review, Title, User
 from .filters import TitleFilter
 from .permissions import (AdminModeratorAuthorOrReadOnly, AdminOnly,
                           AdminOrReadOnly)
@@ -125,7 +126,8 @@ class GenreViewSet(CreateListDestroyViewSet):
 
 
 class TitleViewSet(ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')).order_by('id').all()
     serializer_class = TitleSerializer
     permission_classes = (AdminOrReadOnly,)
     filterset_class = TitleFilter
