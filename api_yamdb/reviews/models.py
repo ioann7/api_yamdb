@@ -57,7 +57,7 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['username']
 
     class Meta:
-        ordering = ['id']
+        ordering = ('id',)
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
 
@@ -85,7 +85,7 @@ class Category(models.Model):
     )
 
     class Meta:
-        ordering = ['id']
+        ordering = ('id',)
         verbose_name = 'category'
         verbose_name_plural = 'categories'
 
@@ -106,7 +106,7 @@ class Genre(models.Model):
     )
 
     class Meta:
-        ordering = ['id']
+        ordering = ('id',)
         verbose_name = 'genre'
         verbose_name_plural = 'genres'
 
@@ -122,7 +122,8 @@ class Title(models.Model):
     )
     year = models.PositiveIntegerField(
         'Год выпуска произведения',
-        help_text='Введите год выпуска произведения'
+        help_text='Введите год выпуска произведения',
+        db_index=True
     )
     description = models.TextField(
         'Описание произведения',
@@ -143,7 +144,7 @@ class Title(models.Model):
         related_name='genre')
 
     class Meta:
-        ordering = ['id']
+        ordering = ('id',)
         verbose_name = 'title'
         verbose_name_plural = 'titles'
 
@@ -156,6 +157,7 @@ class GenreTitle(models.Model):
     title = models.ForeignKey(Title, on_delete=models.CASCADE)
 
     class Meta:
+        ordering = ('id',)
         verbose_name = 'genre_title'
         verbose_name_plural = 'genres_titles'
         constraints = (
@@ -187,7 +189,7 @@ class Review(models.Model):
         verbose_name='Автор'
     )
     score = models.IntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        validators=(MinValueValidator(1), MaxValueValidator(10)),
         verbose_name='Оценка'
     )
     pub_date = models.DateTimeField(
@@ -196,10 +198,10 @@ class Review(models.Model):
     )
 
     class Meta:
-        ordering = ['id']
+        ordering = ('id',)
         constraints = [
             models.UniqueConstraint(
-                fields=['author', 'title'],
+                fields=('author', 'title'),
                 name='unique_review')
         ]
         verbose_name = 'Отзыв'
@@ -232,7 +234,7 @@ class Comment(models.Model):
     )
 
     class Meta:
-        ordering = ['id']
+        ordering = ('id',)
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
 
