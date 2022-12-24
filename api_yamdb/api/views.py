@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
 from reviews.models import Category, Genre, Review, Title, User
+from api_yamdb.settings import EMAIL_ADMIN
 
 from .filters import TitleFilter
 from .permissions import (AdminModeratorAuthorOrReadOnly, AdminOnly,
@@ -59,6 +60,7 @@ def send_email(data):
     email = EmailMessage(
         subject=data['mail_subject'],
         body=data['email_info'],
+        from_email=EMAIL_ADMIN,
         to=[data['to_email']]
     )
     email.send()
