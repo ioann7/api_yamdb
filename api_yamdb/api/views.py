@@ -2,13 +2,13 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
 from django.shortcuts import get_object_or_404
 from django.db.models import Avg
+from django.conf import settings
 from rest_framework import filters, permissions, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from api_yamdb.settings import EMAIL_ADMIN
 from reviews.models import Category, Genre, Review, Title, User
 from .filters import TitleFilter
 from .permissions import (AdminModeratorAuthorOrReadOnly, AdminOnly,
@@ -61,7 +61,7 @@ def send_email(data):
     email = EmailMessage(
         subject=data['mail_subject'],
         body=data['email_info'],
-        from_email=EMAIL_ADMIN,
+        from_email=settings.EMAIL_ADMIN,
         to=[data['to_email']]
     )
     email.send()

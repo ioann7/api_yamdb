@@ -129,19 +129,13 @@ class TitleCreateSerializer(serializers.ModelSerializer):
 class TitleSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
     genre = GenreSerializer(read_only=True, many=True)
-    rating = serializers.SerializerMethodField()
+    rating = serializers.IntegerField()
 
     class Meta:
         model = Title
         fields = (
             'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
-
-    def get_rating(self, obj):
-        rating = obj.rating
-        if not rating:
-            return rating
-        return round(rating, 1)
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -156,7 +150,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields = ('id', 'text', 'author', 'score', 'pub_date')
 
     def validate_score(self, score):
-        if 1 > score > 10:
+        if score < 1 and 10 < score:
             raise serializers.ValidationError(
                 'Допустимые значения оценки - от 1 до 10!'
             )
