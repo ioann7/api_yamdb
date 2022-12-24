@@ -2,17 +2,16 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-ADMIN = 'admin'
-MODERATOR = 'moderator'
-USER = 'user'
-ROLES = [
-    (ADMIN, 'Administrator'),
-    (MODERATOR, 'Moderator'),
-    (USER, 'User'),
-]
-
 
 class User(AbstractUser):
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
+    USER = 'user'
+    ROLES = [
+        (ADMIN, 'Administrator'),
+        (MODERATOR, 'Moderator'),
+        (USER, 'User'),
+    ]
 
     email = models.EmailField(
         verbose_name='Адрес электронной почты',
@@ -43,15 +42,15 @@ class User(AbstractUser):
 
     @property
     def is_user(self):
-        return self.role == USER
+        return self.role == self.USER
 
     @property
     def is_moderator(self):
-        return self.role == MODERATOR
+        return self.role == self.MODERATOR
 
     @property
     def is_admin(self):
-        return self.role == ADMIN
+        return self.role == self.ADMIN
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
@@ -63,8 +62,8 @@ class User(AbstractUser):
 
         constraints = [
             models.CheckConstraint(
-                check=~models.Q(username__iexact="me"),
-                name="username_is_not_me"
+                check=~models.Q(username__iexact='me'),
+                name='username_is_not_me'
             )
         ]
 
@@ -186,7 +185,7 @@ class Review(models.Model):
         related_name='reviews',
         verbose_name='Автор'
     )
-    score = models.IntegerField(
+    score = models.PositiveIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(10)],
         verbose_name='Оценка'
     )
