@@ -150,7 +150,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields = ('id', 'text', 'author', 'score', 'pub_date')
 
     def validate_score(self, score):
-        if score < 1 and 10 < score:
+        if score < 1 or 10 < score:
             raise serializers.ValidationError(
                 'Допустимые значения оценки - от 1 до 10!'
             )
